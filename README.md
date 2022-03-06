@@ -13,7 +13,7 @@
 
 ![ANTIFURTO365_LOGO](antifurto365_logo.png) 
 
-A simple library to interface with iAlarmXR&trade; systems, built for use with Home Assistant.
+A simple library to interface for iAlarmXR&trade; systems, built for use with Home Assistant.
 
 ##
 ** "iAlarmXR" is a trademark of Antifurto365&reg;.
