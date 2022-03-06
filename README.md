@@ -9,7 +9,7 @@
 
 [![Donate](https://img.shields.io/badge/donate-BuyMeCoffee-yellow.svg)](https://www.buymeacoffee.com/bigmoby)
 
-![IALARMXR_LOGO](ialarmxr_logo.png)
+![IALARMXR_LOGO](ialarmxr_logo.png)![ANTIFURTO365_LOGO](antifurto365_logo.png) 
 
 A simple library to interface with iAlarmXR&trade; systems, built for use with Home Assistant.
 
