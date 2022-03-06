@@ -1,4 +1,4 @@
-# iAlarmXR&trade; (Antifurto365&reg;) integration for homeassistant
+# iAlarmXR&trade; (Antifurto365&reg;) integration for Home Assistant
 
 [![GitHub Release][releases-shield]][releases]
 ![Project Stage][project-stage-shield]
