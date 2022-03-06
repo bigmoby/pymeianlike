@@ -20,7 +20,7 @@ A simple library to interface with iAlarmXR&trade; systems, built for use with H
 
 [releases-shield]: https://img.shields.io/github/release/bigmoby/pyialarmxr.svg
 [releases]: https://github.com/bigmoby/pyialarmxr/releases
-[project-stage-shield]: https://img.shields.io/badge/project%20stage-production%20ready-brightgreen.svg
+[project-stage-shield]: https://img.shields.io/badge/project%20stage-development-yellowgreen.svg
 [license-shield]: https://img.shields.io/github/license/bigmoby/pyialarmxr
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
 [commits-shield]: https://img.shields.io/github/commit-activity/y/bigmoby/pyialarmxr.svg
