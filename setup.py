@@ -8,7 +8,7 @@ setup(
     version=__version__,
     description='A simple library to interface for iAlarmXR systems, built for use with Home Assistant',
     author='Fabio Mauro, Ludovico de Nittis',
-    author_email='',
+    author_email='bigmoby.pyialarmxr@gmail.com',
     url='https://github.com/bigmoby/pyialarmxr',
     download_url='https://github.com/bigmoby/pyialarmxr',
     license='MIT License',
