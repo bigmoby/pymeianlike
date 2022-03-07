@@ -10,9 +10,6 @@ import xmltodict
 import uuid
 
 log = logging.getLogger(__name__)
-# dicttoxml is very verbose at INFO level
-logging.getLogger("dicttoxml").setLevel(logging.CRITICAL)
-
 
 def STR(text):
     text = str(text)
