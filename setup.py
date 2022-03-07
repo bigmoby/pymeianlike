@@ -6,7 +6,7 @@ setup(
     name='pyialarmxr',
     py_modules=["pyialarmxr"],
     version=__version__,
-    description='A simple library to interface for iAlarmXR systems, built for use with Home Assistant',
+    description='A simple library to interface with iAlarmXR systems, built for use with Home Assistant',
     author='Fabio Mauro, Ludovico de Nittis',
     author_email='bigmoby.pyialarmxr@gmail.com',
     url='https://github.com/bigmoby/pyialarmxr',
