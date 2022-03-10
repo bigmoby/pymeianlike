@@ -1,5 +1,5 @@
 ----------------------------------------
--- script-name: meian.lua
+-- script-name: wireshark_dissector_meian_alarm.lua
 --
 -- author: Andrea Tuccia <andrea at tuccia dot it>
 --

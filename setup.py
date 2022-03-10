@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 setup(
     name='pyialarmxr',
@@ -13,9 +13,9 @@ setup(
     download_url='https://github.com/bigmoby/pyialarmxr',
     license='MIT License',
     classifiers=[
-      'Development Status :: 4 - Beta',
-      'Intended Audience :: Developers',
-      'Programming Language :: Python :: 3',
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 3',
     ],
     keywords=['ialarmXR', 'antifurtocasa365', 'alarm'],
     packages=['pyialarmxr'],
