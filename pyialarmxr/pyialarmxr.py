@@ -22,6 +22,22 @@ def to_pwd_item(text):
     return 'PWD,%d|%s' % (len(text), text)
 
 
+class IAlarmXRGenericException(Exception):
+    """Generic iAlarmXR Exception"""
+
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return 'IAlarmXRGenericException, {0} '.format(self.message)
+        else:
+            return 'IAlarmXRGenericException has been raised'
+
+
 class IAlarmXR(object):
     """
     Interface the iAlarmXR security systems.
@@ -45,6 +61,8 @@ class IAlarmXR(object):
         """
         :param host: host of the iAlarm security system (e.g. its IP address)
         :param port: port of the iAlarm security system (should be '18034')
+        :param uid: username of the iAlarm security system
+        :param password: password of the iAlarm security system
         """
 
         self.host = host
@@ -301,6 +319,15 @@ class IAlarmXR(object):
         # It might happen to receive the error tag before the root, we just
         # remove it because it's not necessary
         decoded: str = self._xor(data[16:-4]).decode().replace("<Err>ERR|00</Err>", "")
+
+        result_msg = etree.fromstring(decoded)
+
+        records = result_msg.xpath("//*[contains(text(), 'ERR|')]")
+        for record in records:
+            error_code = record.text
+            if error_code != "ERR|00":
+                self.sock.close()
+                raise IAlarmXRGenericException(error_code)
 
         return xmltodict.parse(decoded, xml_attribs=False,
                                dict_constructor=dict,
