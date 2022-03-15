@@ -1,1 +1,1 @@
-from .pyialarmxr import IAlarmXR
+from .pyialarmxr import IAlarmXR, IAlarmXRGenericException
