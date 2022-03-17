@@ -18,7 +18,7 @@ def _to_str_item(text):
     return 'STR,%d|%s' % (len(text), text)
 
 
-def to_pwd_item(text):
+def _to_pwd_item(text):
     return 'PWD,%d|%s' % (len(text), text)
 
 
@@ -88,7 +88,7 @@ class IAlarmXR(object):
 
         cmd = OrderedDict()
         cmd['Id'] = _to_str_item(self.uid)
-        cmd['Pwd'] = to_pwd_item(self.password)
+        cmd['Pwd'] = _to_pwd_item(self.password)
         cmd['Type'] = 'TYP,ANDROID|0'
         cmd['Token'] = _to_str_item(str(uuid.uuid4()))
         cmd['Action'] = 'TYP,IN|0'
