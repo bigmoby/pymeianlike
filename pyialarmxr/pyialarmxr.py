@@ -181,6 +181,10 @@ class IAlarmXR(object):
 
         self._send_request('/Root/Pair/Push', command)
 
+    def _close_connection(self) -> None:
+        if self.sock and self.sock.fileno() != 1:
+            self.sock.close()
+
     def _send_request_list(self, xpath: str, command: dict, offset: int = 0, partial_list: list = None):
         if partial_list is None:
             partial_list = []
@@ -212,7 +216,7 @@ class IAlarmXR(object):
 
         self._send_dict(root_dict)
         response = self._receive()
-
+        self._close_connection()
         return self._clean_response_dict(response, xpath)
 
     def get_mac(self) -> str:
@@ -262,6 +266,7 @@ class IAlarmXR(object):
         command['Err'] = None
 
         zone_status: list[int] = self._send_request_list('/Root/Host/GetByWay', command)
+        self._close_connection()
 
         if zone_status is None:
             raise ConnectionError('An error occurred trying to connect to the alarm '
@@ -272,8 +277,6 @@ class IAlarmXR(object):
 
         if (status == self.ARMED_AWAY or status == self.ARMED_STAY) and zone_alarm:
             return self.TRIGGERED
-
-        self.sock.close()
 
         return status
 
@@ -316,9 +319,18 @@ class IAlarmXR(object):
         except (socket.timeout, OSError, ConnectionRefusedError) as err:
             self.sock.close()
             raise ConnectionError("Connection error") from err
+
+        if not data:
+            self.sock.close()
+            raise ConnectionError("Connection error, received no reply")
+
         # It might happen to receive the error tag before the root, we just
         # remove it because it's not necessary
         decoded: str = self._xor(data[16:-4]).decode().replace("<Err>ERR|00</Err>", "")
+
+        if not decoded:
+            self.sock.close()
+            raise ConnectionError("Connection error, received an unexpected reply")
 
         result_msg = etree.fromstring(decoded)
 
