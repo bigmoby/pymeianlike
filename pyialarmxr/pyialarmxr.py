@@ -192,7 +192,7 @@ class IAlarmXR(object):
             command['Offset'] = 'S32,0,0|%d' % offset
         root_dict: dict = self._create_root_dict(xpath, command)
         self._send_dict(root_dict)
-        response: dict = self._receive()
+        response: dict = self._receive(True)
 
         if partial_list is None:
             partial_list = []
@@ -215,7 +215,7 @@ class IAlarmXR(object):
         root_dict: dict = self._create_root_dict(xpath, command)
 
         self._send_dict(root_dict)
-        response = self._receive()
+        response = self._receive(True)
         self._close_connection()
         return self._clean_response_dict(response, xpath)
 
@@ -313,7 +313,7 @@ class IAlarmXR(object):
         msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_main_command), self.seq, self._xor(xml_main_command), self.seq)
         self.sock.send(msg)
 
-    def _receive(self) -> Union[str, dict, OrderedDict]:
+    def _receive(self, validate_error_msg : bool = False) -> Union[str, dict, OrderedDict]:
         try:
             data = self.sock.recv(1024)
         except (socket.timeout, OSError, ConnectionRefusedError) as err:
@@ -337,7 +337,7 @@ class IAlarmXR(object):
         records = result_msg.xpath("//*[contains(text(), 'ERR|')]")
         for record in records:
             error_code = record.text
-            if error_code != "ERR|00":
+            if validate_error_msg and error_code != "ERR|00":
                 self.sock.close()
                 raise IAlarmXRGenericException(error_code)
 
