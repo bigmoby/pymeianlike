@@ -9,6 +9,7 @@ from typing import Union
 from lxml import etree
 import xmltodict
 import uuid
+import time
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +58,10 @@ class IAlarmXR(object):
     ZONE_LOW_BATTERY = (1 << 4)
     ZONE_LOSS = (1 << 5)
 
-    def __init__(self, host: str, uid: str, password: str, port: int = 18034) -> None:
+    IALARM_P2P_DEFAULT_PORT = 18034
+    IALARM_P2P_DEFAULT_HOST = "47.91.74.102"
+
+    def __init__(self, uid: str, password: str, host: str = IALARM_P2P_DEFAULT_HOST, port: int = IALARM_P2P_DEFAULT_PORT) -> None:
         """
         :param host: host of the iAlarm security system (e.g. its IP address)
         :param port: port of the iAlarm security system (should be '18034')
@@ -448,4 +452,4 @@ class IAlarmXR(object):
         for tmp_i in range(len(xml)):
             ki = tmp_i & 0x7f
             buf[tmp_i] = buf[tmp_i] ^ sz[ki]
-        return buf        
+        return buf       
