@@ -75,16 +75,21 @@ class IAlarmXR(object):
     def ensure_connection_is_open(self) -> None:
         if self.sock is None or self.sock.fileno() == -1:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(5)
+            self.sock.settimeout(5.0)
         else:
             return
 
         self.seq = 0
         try:
             self.sock.connect((self.host, self.port))
-        except (socket.timeout, OSError, ConnectionRefusedError) as err:
+        except socket.timeout as timeout_err:
+            print('Closing socket connection and retry: {}'.format(timeout_err)) 
             self.sock.close()
-            raise ConnectionError('Connection to the alarm system failed') from err
+            time.sleep(30)
+            self.ensure_connection_is_open()
+        except (OSError, ConnectionRefusedError) as err:
+            self.sock.close()
+            raise ConnectionError('Connection to the alarm system failed: {}'.format(err)) from err            
 
         cmd = OrderedDict()
         cmd['Id'] = _to_str_item(self.uid)
@@ -314,11 +319,18 @@ class IAlarmXR(object):
         self.sock.send(msg)
 
     def _receive(self, validate_error_msg : bool = False) -> Union[str, dict, OrderedDict]:
+        data: bytes = None
         try:
+            self.sock.settimeout(5.0)
             data = self.sock.recv(1024)
-        except (socket.timeout, OSError, ConnectionRefusedError) as err:
+        except socket.timeout as timeout_err:
+            print('Closing socket connection and retry. Caused by: [{}] on receive function'.format(timeout_err)) 
             self.sock.close()
-            raise ConnectionError("Connection error") from err
+            time.sleep(30)
+            self.ensure_connection_is_open()
+        except (OSError, ConnectionRefusedError) as err:
+            self.sock.close()
+            raise ConnectionError('Connection error: {}'.format(err)) from err
 
         if not data:
             self.sock.close()
@@ -334,12 +346,15 @@ class IAlarmXR(object):
 
         result_msg = etree.fromstring(decoded)
 
-        records = result_msg.xpath("//*[contains(text(), 'ERR|')]")
-        for record in records:
-            error_code = record.text
-            if validate_error_msg and error_code != "ERR|00":
-                self.sock.close()
-                raise IAlarmXRGenericException(error_code)
+        if validate_error_msg:
+            error_records = result_msg.xpath("//*[contains(text(), 'ERR|')]")
+            for error_statement in error_records:
+                error_code = error_statement.text
+                if error_code != "ERR|00":
+                    self.sock.close()
+                    raise IAlarmXRGenericException(error_code)
+        else: 
+            decoded: str = decoded.replace("<DevVersion /><DevType /><Err>ERR|01</Err>", "<DevVersion/><DevType/><Err/>")
 
         return xmltodict.parse(decoded, xml_attribs=False,
                                dict_constructor=dict,
@@ -433,4 +448,4 @@ class IAlarmXR(object):
         for tmp_i in range(len(xml)):
             ki = tmp_i & 0x7f
             buf[tmp_i] = buf[tmp_i] ^ sz[ki]
-        return buf
+        return buf        
