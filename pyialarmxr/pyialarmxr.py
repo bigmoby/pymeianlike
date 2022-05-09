@@ -86,8 +86,7 @@ class IAlarmXR(object):
         self.seq = 0
         try:
             self.sock.connect((self.host, self.port))
-        except socket.timeout as timeout_err:
-            print('Closing socket connection and retry: {}'.format(timeout_err)) 
+        except socket.timeout as timeout_err:            
             self.sock.close()
             time.sleep(30)
             self.ensure_connection_is_open()
@@ -328,7 +327,6 @@ class IAlarmXR(object):
             self.sock.settimeout(5.0)
             data = self.sock.recv(1024)
         except socket.timeout as timeout_err:
-            print('Closing socket connection and retry. Caused by: [{}] on receive function'.format(timeout_err)) 
             self.sock.close()
             time.sleep(30)
             self.ensure_connection_is_open()
