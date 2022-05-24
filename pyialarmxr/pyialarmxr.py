@@ -38,6 +38,21 @@ class IAlarmXRGenericException(Exception):
         else:
             return 'IAlarmXRGenericException has been raised'
 
+class IAlarmXRSocketTimeoutException(Exception):
+    """Socket Timeout iAlarmXR Exception"""
+
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return 'IAlarmXRSocketTimeoutException, {0} '.format(self.message)
+        else:
+            return 'IAlarmXRSocketTimeoutException has been raised'            
+
 
 class IAlarmXR(object):
     """
@@ -88,8 +103,7 @@ class IAlarmXR(object):
             self.sock.connect((self.host, self.port))
         except socket.timeout as timeout_err:            
             self.sock.close()
-            time.sleep(30)
-            self.ensure_connection_is_open()
+            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(err)) from timeout_err            
         except (OSError, ConnectionRefusedError) as err:
             self.sock.close()
             raise ConnectionError('Connection to the alarm system failed: {}'.format(err)) from err            
@@ -112,6 +126,7 @@ class IAlarmXR(object):
 
         self.seq += 1
         msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_root_container), self.seq, self._xor(xml_root_container), self.seq)
+        
         self.sock.send(msg)
 
         # consume response message, it's mandatory to protocol to skip the Pair Client response message
@@ -328,8 +343,7 @@ class IAlarmXR(object):
             data = self.sock.recv(1024)
         except socket.timeout as timeout_err:
             self.sock.close()
-            time.sleep(30)
-            self.ensure_connection_is_open()
+            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(err)) from timeout_err   
         except (OSError, ConnectionRefusedError) as err:
             self.sock.close()
             raise ConnectionError('Connection error: {}'.format(err)) from err
@@ -450,4 +464,4 @@ class IAlarmXR(object):
         for tmp_i in range(len(xml)):
             ki = tmp_i & 0x7f
             buf[tmp_i] = buf[tmp_i] ^ sz[ki]
-        return buf       
+        return buf
