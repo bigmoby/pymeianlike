@@ -13,6 +13,7 @@ import time
 
 log = logging.getLogger(__name__)
 
+RECV_BUF_SIZE = 1024 
 
 def _to_str_item(text):
     text = str(text)
@@ -94,7 +95,7 @@ class IAlarmXR(object):
     def ensure_connection_is_open(self) -> None:
         if self.sock is None or self.sock.fileno() == -1:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(5.0)
+            self.sock.settimeout(10.0)
         else:
             return
 
@@ -288,6 +289,8 @@ class IAlarmXR(object):
         command['Ln'] = None
         command['Err'] = None
 
+        self._close_connection()
+
         zone_status: list[int] = self._send_request_list('/Root/Host/GetByWay', command)
         self._close_connection()
 
@@ -336,11 +339,24 @@ class IAlarmXR(object):
         msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_main_command), self.seq, self._xor(xml_main_command), self.seq)
         self.sock.send(msg)
 
+    def _select(self, mydict: OrderedDict, path: str):
+        elem = mydict
+        try:
+            for i in path.strip('/').split('/'):
+                try:
+                    i = int(i)
+                    elem = elem[i]
+                except ValueError:
+                    elem = elem.get(i)
+        except:
+            pass
+        return elem
+
     def _receive(self, validate_error_msg : bool = False) -> Union[str, dict, OrderedDict]:
         data: bytes = None
         try:
-            self.sock.settimeout(5.0)
-            data = self.sock.recv(1024)
+            self.sock.settimeout(10.0)
+            data = self.sock.recv(RECV_BUF_SIZE)
         except socket.timeout as timeout_err:
             self.sock.close()
             raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err   
@@ -352,29 +368,28 @@ class IAlarmXR(object):
             self.sock.close()
             raise ConnectionError("Connection error, received no reply")
 
-        # It might happen to receive the error tag before the root, we just
-        # remove it because it's not necessary
-        decoded: str = self._xor(data[16:-4]).decode().replace("<Err>ERR|00</Err>", "")
+        if (type(data) == str):
+            data = data.encode()
+        
+        head = data[0:4]
 
-        if not decoded:
+        if head == b'@ieM':
+            xpath = '/Root/Pair/Client'
+            response_message: OrderedDict = xmltodict.parse(self._xor(data[16:-4]).decode(), xml_attribs=False, dict_constructor=dict, postprocessor=self._xml_read)
+            
+            self.push = self._select(response_message, xpath)
+            err = self._select(response_message, '%s/Err' % xpath)
+            
+            if err is not None and err != 0:
+                self.sock.close()
+                raise IAlarmXRGenericException("Pair subscription error")
+
+            return response_message
+        
+        else:
             self.sock.close()
-            raise ConnectionError("Connection error, received an unexpected reply")
+            raise IAlarmXRGenericException("Response error")
 
-        result_msg = etree.fromstring(decoded)
-
-        if validate_error_msg:
-            error_records = result_msg.xpath("//*[contains(text(), 'ERR|')]")
-            for error_statement in error_records:
-                error_code = error_statement.text
-                if error_code != "ERR|00":
-                    self.sock.close()
-                    raise IAlarmXRGenericException(error_code)
-        else: 
-            decoded: str = decoded.replace("<DevVersion /><DevType /><Err>ERR|01</Err>", "<DevVersion/><DevType/><Err/>")
-
-        return xmltodict.parse(decoded, xml_attribs=False,
-                               dict_constructor=dict,
-                               postprocessor=self._xml_read)
 
     @staticmethod
     def _xml_read(_path, key, value):
@@ -464,4 +479,4 @@ class IAlarmXR(object):
         for tmp_i in range(len(xml)):
             ki = tmp_i & 0x7f
             buf[tmp_i] = buf[tmp_i] ^ sz[ki]
-        return buf
+        return buf      
