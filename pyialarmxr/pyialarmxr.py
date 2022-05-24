@@ -103,7 +103,7 @@ class IAlarmXR(object):
             self.sock.connect((self.host, self.port))
         except socket.timeout as timeout_err:            
             self.sock.close()
-            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(err)) from timeout_err            
+            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err            
         except (OSError, ConnectionRefusedError) as err:
             self.sock.close()
             raise ConnectionError('Connection to the alarm system failed: {}'.format(err)) from err            
@@ -343,7 +343,7 @@ class IAlarmXR(object):
             data = self.sock.recv(1024)
         except socket.timeout as timeout_err:
             self.sock.close()
-            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(err)) from timeout_err   
+            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err   
         except (OSError, ConnectionRefusedError) as err:
             self.sock.close()
             raise ConnectionError('Connection error: {}'.format(err)) from err
