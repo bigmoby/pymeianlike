@@ -15,6 +15,8 @@ log = logging.getLogger(__name__)
 
 RECV_BUF_SIZE = 1024 
 
+UUID_REFERENCE = uuid.uuid4()
+
 def _to_str_item(text):
     text = str(text)
     return 'STR,%d|%s' % (len(text), text)
@@ -22,6 +24,11 @@ def _to_str_item(text):
 
 def _to_pwd_item(text):
     return 'PWD,%d|%s' % (len(text), text)
+
+def _uuid_regenerate():
+    """Return last valid UUID"""
+    global UUID_REFERENCE
+    UUID_REFERENCE = uuid.uuid4()
 
 
 class IAlarmXRGenericException(Exception):
@@ -103,17 +110,17 @@ class IAlarmXR(object):
         try:
             self.sock.connect((self.host, self.port))
         except socket.timeout as timeout_err:            
-            self.sock.close()
+            self._close_connection()
             raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err            
         except (OSError, ConnectionRefusedError) as err:
-            self.sock.close()
+            self._close_connection()
             raise ConnectionError('Connection to the alarm system failed: {}'.format(err)) from err            
 
         cmd = OrderedDict()
         cmd['Id'] = _to_str_item(self.uid)
         cmd['Pwd'] = _to_pwd_item(self.password)
         cmd['Type'] = 'TYP,ANDROID|0'
-        cmd['Token'] = _to_str_item(str(uuid.uuid4()))
+        cmd['Token'] = _to_str_item(str(UUID_REFERENCE))
         cmd['Action'] = 'TYP,IN|0'
         cmd['PemNum'] = 'STR,5|26'
         cmd['DevVersion'] = None
@@ -123,10 +130,12 @@ class IAlarmXR(object):
         xpath: str = '/Root/Pair/Client'
         root_dict: dict = self._create_root_dict(xpath, cmd)
 
-        xml_root_container: str = etree.tostring(self._convert_dict_to_xml(root_dict), pretty_print=False)
+        xml_pair_message: str = etree.tostring(self._convert_dict_to_xml(root_dict), pretty_print=False)
+
+        # print(f"==========>>> Pair message request [ {xml_pair_message}} ]")
 
         self.seq += 1
-        msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_root_container), self.seq, self._xor(xml_root_container), self.seq)
+        msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_pair_message), self.seq, self._xor(xml_pair_message), self.seq)
         
         self.sock.send(msg)
 
@@ -240,7 +249,7 @@ class IAlarmXR(object):
 
         self._send_dict(root_dict)
         response = self._receive(True)
-        self._close_connection()
+        
         return self._clean_response_dict(response, xpath)
 
     def get_mac(self) -> str:
@@ -271,6 +280,7 @@ class IAlarmXR(object):
         command['DevStatus'] = None
         command['Err'] = None
 
+        self.ensure_connection_is_open()
         alarm_status: dict = self._send_request('/Root/Host/GetAlarmStatus', command)
 
         if alarm_status is None:
@@ -289,14 +299,13 @@ class IAlarmXR(object):
         command['Ln'] = None
         command['Err'] = None
 
-        self._close_connection()
-
         zone_status: list[int] = self._send_request_list('/Root/Host/GetByWay', command)
         self._close_connection()
 
         if zone_status is None:
             raise ConnectionError('An error occurred trying to connect to the alarm '
                                   'system')
+
         for zone in zone_status:
             if zone & self.ZONE_ALARM:
                 zone_alarm = True
@@ -310,33 +319,42 @@ class IAlarmXR(object):
         command: OrderedDict[str, Union[str, None]] = OrderedDict()
         command['DevStatus'] = 'TYP,ARM|0'
         command['Err'] = None
+        self.ensure_connection_is_open()
         self._send_request('/Root/Host/SetAlarmStatus', command)
+        self._close_connection()
 
     def arm_stay(self) -> None:
         command: OrderedDict[str, Union[str, None]] = OrderedDict()
         command['DevStatus'] = 'TYP,STAY|2'
         command['Err'] = None
+        self.ensure_connection_is_open()
         self._send_request('/Root/Host/SetAlarmStatus', command)
+        self._close_connection()
 
     def disarm(self) -> None:
         command: OrderedDict[str, Union[str, None]] = OrderedDict()
         command['DevStatus'] = 'TYP,DISARM|1'
         command['Err'] = None
+        self.ensure_connection_is_open()
         self._send_request('/Root/Host/SetAlarmStatus', command)
+        self._close_connection()
 
     def cancel_alarm(self) -> None:
         command: OrderedDict[str, Union[str, None]] = OrderedDict()
         command['DevStatus'] = 'TYP,CLEAR|3'
         command['Err'] = None
+        self.ensure_connection_is_open()
         self._send_request('/Root/Host/SetAlarmStatus', command)
+        self._close_connection()
 
     def _send_dict(self, root_dict) -> None:
-        self.ensure_connection_is_open()
+        
+        xml_command_request: str = etree.tostring(self._convert_dict_to_xml(root_dict), pretty_print=False)
 
-        xml_main_command: str = etree.tostring(self._convert_dict_to_xml(root_dict), pretty_print=False)
+        # print(f"==========>>> Request message [ {xml_command_request} ]")
 
         self.seq += 1
-        msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_main_command), self.seq, self._xor(xml_main_command), self.seq)
+        msg = b'@ieM%04d%04d0000%s%04d' % (len(xml_command_request), self.seq, self._xor(xml_command_request), self.seq)
         self.sock.send(msg)
 
     def _select(self, mydict: OrderedDict, path: str):
@@ -358,14 +376,14 @@ class IAlarmXR(object):
             self.sock.settimeout(10.0)
             data = self.sock.recv(RECV_BUF_SIZE)
         except socket.timeout as timeout_err:
-            self.sock.close()
+            self._close_connection()
             raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err   
         except (OSError, ConnectionRefusedError) as err:
-            self.sock.close()
+            self._close_connection()
             raise ConnectionError('Connection error: {}'.format(err)) from err
 
         if not data:
-            self.sock.close()
+            self._close_connection()
             raise ConnectionError("Connection error, received no reply")
 
         if (type(data) == str):
@@ -381,13 +399,16 @@ class IAlarmXR(object):
             err = self._select(response_message, '%s/Err' % xpath)
             
             if err is not None and err != 0:
-                self.sock.close()
+                self._close_connection()
+                # print(f"==========>>> Response error message [ {response_message} ]")
+                _uuid_regenerate()
                 raise IAlarmXRGenericException("Pair subscription error")
 
+            # print(f"==========>>> Response message [ {response_message} ]")
             return response_message
         
         else:
-            self.sock.close()
+            self._close_connection()
             raise IAlarmXRGenericException("Response error")
 
 
@@ -479,4 +500,4 @@ class IAlarmXR(object):
         for tmp_i in range(len(xml)):
             ki = tmp_i & 0x7f
             buf[tmp_i] = buf[tmp_i] ^ sz[ki]
-        return buf      
+        return buf
