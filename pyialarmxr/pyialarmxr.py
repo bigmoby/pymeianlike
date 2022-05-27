@@ -114,7 +114,7 @@ class IAlarmXR(object):
         cmd['Id'] = _to_str_item(self.uid)
         cmd['Pwd'] = _to_pwd_item(self.password)
         cmd['Type'] = 'TYP,ANDROID|0'
-        cmd['Token'] = _to_str_item(str(UUID_REFERENCE))
+        cmd['Token'] = _to_str_item(str(self.uuid_reference))
         cmd['Action'] = 'TYP,IN|0'
         cmd['PemNum'] = 'STR,5|26'
         cmd['DevVersion'] = None
