@@ -13,9 +13,7 @@ import time
 
 log = logging.getLogger(__name__)
 
-RECV_BUF_SIZE = 1024 
-
-UUID_REFERENCE = uuid.uuid4()
+RECV_BUF_SIZE = 1024
 
 def _to_str_item(text):
     text = str(text)
@@ -24,11 +22,6 @@ def _to_str_item(text):
 
 def _to_pwd_item(text):
     return 'PWD,%d|%s' % (len(text), text)
-
-def _uuid_regenerate():
-    """Return last valid UUID"""
-    global UUID_REFERENCE
-    UUID_REFERENCE = uuid.uuid4()
 
 
 class IAlarmXRGenericException(Exception):
@@ -96,6 +89,7 @@ class IAlarmXR(object):
         self.port = port
         self.uid = uid
         self.password = password
+        self.uuid_reference = uuid.uuid4()
         self.seq = 0
         self.sock = None
 
@@ -214,6 +208,10 @@ class IAlarmXR(object):
 
         self._send_request('/Root/Pair/Push', command)
 
+    def _uuid_regenerate(self) -> None:
+        """Return last valid UUID"""
+        self.uuid_reference = uuid.uuid4()
+
     def _close_connection(self) -> None:
         if self.sock and self.sock.fileno() != 1:
             self.sock.close()
@@ -264,8 +262,10 @@ class IAlarmXR(object):
         command['Dns2'] = None
         command['Err'] = None
 
+        self.ensure_connection_is_open()
         network_info = self._send_request('/Root/Host/GetNet', command)
-
+        self._close_connection()
+        
         if network_info is not None:
             mac = network_info.get("Mac", "")
 
@@ -401,7 +401,7 @@ class IAlarmXR(object):
             if err is not None and err != 0:
                 self._close_connection()
                 # print(f"==========>>> Response error message [ {response_message} ]")
-                _uuid_regenerate()
+                self._uuid_regenerate()
                 raise IAlarmXRGenericException("Pair subscription error")
 
             # print(f"==========>>> Response message [ {response_message} ]")
