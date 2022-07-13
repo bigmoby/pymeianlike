@@ -24,8 +24,8 @@ def _to_pwd_item(text):
     return 'PWD,%d|%s' % (len(text), text)
 
 
-class IAlarmXRGenericException(Exception):
-    """Generic iAlarmXR Exception"""
+class MeianlikeGenericException(Exception):
+    """Generic meianlike Exception"""
 
     def __init__(self, *args):
         if args:
@@ -35,12 +35,12 @@ class IAlarmXRGenericException(Exception):
 
     def __str__(self):
         if self.message:
-            return 'IAlarmXRGenericException, {0} '.format(self.message)
+            return 'MeianlikeGenericException, {0} '.format(self.message)
         else:
-            return 'IAlarmXRGenericException has been raised'
+            return 'MeianlikeGenericException has been raised'
 
-class IAlarmXRSocketTimeoutException(Exception):
-    """Socket Timeout iAlarmXR Exception"""
+class MeianlikeSocketTimeoutException(Exception):
+    """Socket Timeout Meianlike Exception"""
 
     def __init__(self, *args):
         if args:
@@ -50,14 +50,14 @@ class IAlarmXRSocketTimeoutException(Exception):
 
     def __str__(self):
         if self.message:
-            return 'IAlarmXRSocketTimeoutException, {0} '.format(self.message)
+            return 'MeianlikeSocketTimeoutException, {0} '.format(self.message)
         else:
-            return 'IAlarmXRSocketTimeoutException has been raised'            
+            return 'MeianlikeSocketTimeoutException has been raised'            
 
 
-class IAlarmXR(object):
+class Meianlike(object):
     """
-    Interface the iAlarmXR security systems.
+    Interface a meianlike security systems.
     """
 
     ARMED_AWAY = 0
@@ -74,15 +74,15 @@ class IAlarmXR(object):
     ZONE_LOW_BATTERY = (1 << 4)
     ZONE_LOSS = (1 << 5)
 
-    IALARM_P2P_DEFAULT_PORT = 18034
-    IALARM_P2P_DEFAULT_HOST = "47.91.74.102"
+    MEIANLIKE_P2P_DEFAULT_PORT = 18034
+    MEIANLIKE_P2P_DEFAULT_HOST = "0.0.0.0"
 
-    def __init__(self, uid: str, password: str, host: str = IALARM_P2P_DEFAULT_HOST, port: int = IALARM_P2P_DEFAULT_PORT) -> None:
+    def __init__(self, uid: str, password: str, host: str = MEIANLIKE_P2P_DEFAULT_HOST, port: int = MEIANLIKE_P2P_DEFAULT_PORT) -> None:
         """
-        :param host: host of the iAlarm security system (e.g. its IP address)
-        :param port: port of the iAlarm security system (should be '18034')
-        :param uid: username of the iAlarm security system
-        :param password: password of the iAlarm security system
+        :param host: host of a meianlike security system (e.g. its IP address)
+        :param port: port of a meianlike security system (should be '18034')
+        :param uid: username of a meianlike security system
+        :param password: password of a meianlike security system
         """
 
         self.host = host
@@ -105,7 +105,7 @@ class IAlarmXR(object):
             self.sock.connect((self.host, self.port))
         except socket.timeout as timeout_err:            
             self._close_connection()
-            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err            
+            raise MeianlikeSocketTimeoutException('meianlike P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err            
         except (OSError, ConnectionRefusedError) as err:
             self._close_connection()
             raise ConnectionError('Connection to the alarm system failed: {}'.format(err)) from err            
@@ -377,7 +377,7 @@ class IAlarmXR(object):
             data = self.sock.recv(RECV_BUF_SIZE)
         except socket.timeout as timeout_err:
             self._close_connection()
-            raise IAlarmXRSocketTimeoutException('IAlarmXR P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err   
+            raise MeianlikeSocketTimeoutException('meianlike P2P service socket timeout thrown: {}'.format(timeout_err)) from timeout_err   
         except (OSError, ConnectionRefusedError) as err:
             self._close_connection()
             raise ConnectionError('Connection error: {}'.format(err)) from err
@@ -402,14 +402,14 @@ class IAlarmXR(object):
                 self._close_connection()
                 # print(f"==========>>> Response error message [ {response_message} ]")
                 self._uuid_regenerate()
-                raise IAlarmXRGenericException("Pair subscription error")
+                raise MeianlikeGenericException("Pair subscription error")
 
             # print(f"==========>>> Response message [ {response_message} ]")
             return response_message
         
         else:
             self._close_connection()
-            raise IAlarmXRGenericException("Response error")
+            raise MeianlikeGenericException("Response error")
 
 
     @staticmethod
@@ -448,11 +448,11 @@ class IAlarmXR(object):
                     for list_child in child:
                         elem: etree.Element = etree.Element(tag)
                         parent.append(elem)
-                        IAlarmXR._convert_dict_to_xml_recurse(elem, list_child)
+                        Meianlike._convert_dict_to_xml_recurse(elem, list_child)
                 else:
                     elem = etree.Element(tag)
                     parent.append(elem)
-                    IAlarmXR._convert_dict_to_xml_recurse(elem, child)
+                    Meianlike._convert_dict_to_xml_recurse(elem, child)
         else:
             if dictitem is not None:
                 # None Element should be written without "None" value
@@ -463,7 +463,7 @@ class IAlarmXR(object):
         # Converts a dictionary to an XML ElementTree Element
         root_tag = list(xmldict.keys())[0]
         root: etree.Element = etree.Element(root_tag)
-        IAlarmXR._convert_dict_to_xml_recurse(root, xmldict[root_tag])
+        Meianlike._convert_dict_to_xml_recurse(root, xmldict[root_tag])
         return root
 
     @staticmethod

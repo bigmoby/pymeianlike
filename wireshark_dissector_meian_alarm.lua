@@ -27,9 +27,9 @@
 
 
 -- Create Meian alarm protocol and its fields
-p_meian = Proto ("iAlarm","iAlarm TCP Protocol")
+p_meian = Proto ("meianlike","meianlike TCP Protocol")
 
-print("Dissector iAlarm TCP Protocol")
+print("Dissector meianlike TCP Protocol")
 
 local xml_field = Field.new("data")
 
@@ -41,7 +41,7 @@ function p_meian.dissector (buf, pkt, root)
 
     -- Decode data
     local hexkey = ByteArray.new("0c384e4e62382d620e384e4e44382d300f382b382b0c5a6234384e304e4c372b10535a0c20432d171142444e58422c421157322a204036172056446262382b5f0c384e4e62382d620e385858082e232c0f382b382b0c5a62343830304e2e362b10545a0c3e432e1711384e625824371c1157324220402c17204c444e624c2e12")
-    local key = ByteArray.tvb(hexkey, "iAlarm keys table")
+    local key = ByteArray.tvb(hexkey, "meianlike keys table")
     local ascii = ""
     local hex = ""
 

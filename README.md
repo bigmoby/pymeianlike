@@ -1,4 +1,4 @@
-# iAlarmXR&trade; (Antifurto365&reg;) integration for Home Assistant
+# A Meianlike alarm protocol library
 
 [![GitHub Release][releases-shield]][releases]
 ![Project Stage][project-stage-shield]
@@ -9,19 +9,13 @@
 
 [![Donate](https://img.shields.io/badge/donate-BuyMeCoffee-yellow.svg)](https://www.buymeacoffee.com/bigmoby)
 
-![IALARMXR_LOGO](ialarmxr_logo.png)
+A simple library to interface with Meianlike alarm systems.
 
-![ANTIFURTO365_LOGO](antifurto365_logo.png) 
 
-A simple library to interface with iAlarmXR&trade; systems, built for use with Home Assistant.
-
-##
-** "iAlarmXR" is a trademark of Antifurto365&reg;.
-
-[releases-shield]: https://img.shields.io/github/release/bigmoby/pyialarmxr.svg
-[releases]: https://github.com/bigmoby/pyialarmxr/releases
+[releases-shield]: https://img.shields.io/github/release/bigmoby/pymeianlike.svg
+[releases]: https://github.com/bigmoby/pymeianlike/releases
 [project-stage-shield]: https://img.shields.io/badge/project%20stage-development-yellowgreen.svg
-[license-shield]: https://img.shields.io/github/license/bigmoby/pyialarmxr
+[license-shield]: https://img.shields.io/github/license/bigmoby/pymeianlike
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2022.svg
-[commits-shield]: https://img.shields.io/github/commit-activity/y/bigmoby/pyialarmxr.svg
-[commits]: https://img.shields.io/github/commits/bigmoby/pyialarmxr
+[commits-shield]: https://img.shields.io/github/commit-activity/y/bigmoby/pymeianlike.svg
+[commits]: https://img.shields.io/github/commits/bigmoby/pymeianlike

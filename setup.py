@@ -1,24 +1,24 @@
 from setuptools import setup
 
-__version__ = '1.0.18'
+__version__ = '1.0.0'
 
 setup(
-    name='pyialarmxr',
-    py_modules=["pyialarmxr"],
+    name='pymeianlike',
+    py_modules=["pymeianlike"],
     version=__version__,
-    description='A simple library to interface with iAlarmXR systems, built for use with Home Assistant',
+    description='A simple library to interface with a Meianlike systems.',
     author='Fabio Mauro, Ludovico de Nittis',
-    author_email='bigmoby.pyialarmxr@gmail.com',
-    url='https://github.com/bigmoby/pyialarmxr',
-    download_url='https://github.com/bigmoby/pyialarmxr',
+    author_email='bigmoby.pymeianlike@gmail.com',
+    url='https://github.com/bigmoby/pymeianlike',
+    download_url='https://github.com/bigmoby/pymeianlike',
     license='MIT License',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
     ],
-    keywords=['ialarmXR', 'antifurtocasa365', 'alarm'],
-    packages=['pyialarmxr'],
+    keywords=['meianlike', 'alarm'],
+    packages=['pymeianlike'],
     include_package_data=True,
     install_requires=['lxml', 'xmltodict'],
 )
