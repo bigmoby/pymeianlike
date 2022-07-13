@@ -20,5 +20,5 @@ setup(
     keywords=['meianlike', 'alarm'],
     packages=['pymeianlike'],
     include_package_data=True,
-    install_requires=['lxml', 'xmltodict'],
+    install_requires=['lxml'],
 )

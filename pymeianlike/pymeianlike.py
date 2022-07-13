@@ -7,7 +7,7 @@ from collections import OrderedDict
 from typing import Union
 
 from lxml import etree
-import xmltodict
+
 import uuid
 import time
 
