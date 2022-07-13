@@ -1,4 +1,4 @@
-# A Meianlike alarm protocol library
+# A meianlike alarm protocol library
 
 [![GitHub Release][releases-shield]][releases]
 ![Project Stage][project-stage-shield]
