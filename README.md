@@ -9,7 +9,7 @@
 
 [![Donate](https://img.shields.io/badge/donate-BuyMeCoffee-yellow.svg)](https://www.buymeacoffee.com/bigmoby)
 
-A simple library to interface with Meianlike alarm systems.
+A simple library to interface with a meianlike alarm systems.
 
 
 [releases-shield]: https://img.shields.io/github/release/bigmoby/pymeianlike.svg
